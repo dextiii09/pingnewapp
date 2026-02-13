@@ -22,15 +22,20 @@ jobs:
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
 
-    - name: Fix gradlew line endings and permissions
+    # NUCLEAR OPTION: Delete the local wrapper to force system gradle usage
+    # This removes any possibility of line-ending or permission errors from Windows files
+    - name: Remove Local Wrapper
       working-directory: ./android
-      run: |
-        sed -i 's/\r$//' gradlew
-        chmod +x gradlew
+      run: rm -rf gradle gradlew gradlew.bat
 
-    - name: Build with Gradle Wrapper
+    - name: Setup Gradle (Managed)
+      uses: gradle/actions/setup-gradle@v3
+      with:
+        gradle-version: '8.5'
+
+    - name: Build with System Gradle
       working-directory: ./android
-      run: ./gradlew assembleDebug -x lint --stacktrace --warning-mode all
+      run: gradle assembleDebug -x lint --stacktrace --warning-mode all
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
